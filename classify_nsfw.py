@@ -80,9 +80,9 @@ def caffe_preprocess_and_compute(pimg, caffe_transformer=None, caffe_net=None,
         return []
 
 
-def main(argv):
+def check(file,model_def,pretrained_model):
     pycaffe_dir = os.path.dirname(__file__)
-
+    '''
     parser = argparse.ArgumentParser()
     # Required arguments: input file.
     parser.add_argument(
@@ -102,10 +102,20 @@ def main(argv):
 
     args = parser.parse_args()
     image_data = open(args.input_file).read()
-
+    
+    
     # Pre-load caffe model.
     nsfw_net = caffe.Net(args.model_def,  # pylint: disable=invalid-name
         args.pretrained_model, caffe.TEST)
+    '''
+
+    f = open(file)
+    image_data = f.read()
+
+    # Pre-load caffe model.
+    nsfw_net = caffe.Net(model_def,  # pylint: disable=invalid-name
+                         pretrained_model, caffe.TEST)
+
 
     # Load transformer
     # Note that the parameters are hard-coded for best results
@@ -117,12 +127,9 @@ def main(argv):
 
     # Classify.
     scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net, output_layers=['prob'])
+    del image_data
+    f.close()
 
     # Scores is the array containing SFW / NSFW image probabilities
     # scores[1] indicates the NSFW probability
-    print "NSFW score:  " , scores[1]
-
-
-
-if __name__ == '__main__':
-    main(sys.argv)
+    return scores[1]
